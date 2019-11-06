@@ -1,0 +1,12 @@
+Player1: 7,8 "miss"Player1: 3,3 "hit"Player1: 4,3 "hit"Player1: 5,3 "hit"Player1: 6,3 "hit"Player1: 7,3 "hit" sunk Destroyer!Player 1 wins Player 2 loses
+*** Player1 Stats ***
+Number of Hits: 5
+Number of Misses: 0
+Total Shots: 5
+Hit/Miss Ratio 500%
+
+*** Player2 Stats ***
+Number of Hits: 0
+Number of Misses: 1
+Total Shots: 1
+Hit/Miss Ratio 0%

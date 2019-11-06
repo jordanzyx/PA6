@@ -1,6 +1,9 @@
-//
-// Created by Jordan on 10/20/2019.
-//
+/*
+Name: Jordan Muehlbauer
+Date: 10/20/2019
+Usage: Implementation of source.h; this is the source for battleship
+*/
+#define _CRT_SECURE_NO_WARNINGS
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,7 +29,7 @@ void start() {
     //Handle the initial menu
     printMenu();
     system("pause");
-//    system("cls");
+    //    system("cls");
 
     //Create the variables for player and computer
     char player[10][10];
@@ -38,7 +41,9 @@ void start() {
 
 
     //Create LOG file
-    FILE *log = fopen("C:\\Users\\Jordan\\CLionProjects\\PA6\\battleship.log","r");
+    FILE* log = NULL;
+    log = fopen("battleship.log", "w");
+
 
     //Set every element to '-'
     emptyArray(player);
@@ -52,32 +57,40 @@ void start() {
     int game = 1;
 
 
-    while(game == 1){
+    while (game == 1) {
 
-        if(turn == 1){
-            game = playerTurn(player,computer,log,&playerHits,&playerMisses);
-            if(game == -1){
-                logGame(playerHits,playerMisses,computerHits,computerMisses,1,log);
+        //Player turn
+
+        if (turn == 1) {
+            game = playerTurn(player, computer, log, &playerHits, &playerMisses);
+
+            //Game over? Log
+            if (game == -1) {
+                logGame(playerHits, playerMisses, computerHits, computerMisses, 1, log);
             }
         }
 
-        if(turn == 2){
-            game = computerTurn(player,computer,log,&computerHits,&computerMisses);
-            if(game == -1){
-                logGame(playerHits,playerMisses,computerHits,computerMisses,2,log);
+        //Computer turn
+
+        if (turn == 2) {
+            game = computerTurn(player, computer, log, &computerHits, &computerMisses);
+
+            //Game over? Log
+            if (game == -1) {
+                logGame(playerHits, playerMisses, computerHits, computerMisses, 2, log);
             }
         }
 
 
-
-        if(turn == 1){turn = 2;
-        continue;}
-        if(turn == 2)turn = 1;
+        //turn swapper
+        if (turn == 1) {
+            turn = 2;
+            continue;
+        }
+        if (turn == 2)turn = 1;
 
     }
 
-
-    fclose(log);
 }
 
 void setUpPlayerBoard(char array[10][10]) {
@@ -128,11 +141,12 @@ void setUpPlayerBoard(char array[10][10]) {
                 }
 
             }
-        } else generateRandomShips(array);
+        }
+        else generateRandomShips(array);
     }
 }
 
-char *getNameFromShip(int ship) {
+char* getNameFromShip(int ship) {
     if (ship == CARRIER)return "Carrier";
     if (ship == DESTROYER)return "Destroyer";
     if (ship == SUBMARINE)return "Submarine";
@@ -141,14 +155,17 @@ char *getNameFromShip(int ship) {
 }
 
 void generateRandomShips(char array[10][10]) {
+    //Go through the five ship types
     for (int i = 1; i <= 5; ++i) {
         int placed = -1;
+        //Try and place until placed
         while (placed == -1) {
+            //Ranndomize location and direction
             int x = rand() % 10;
             int y = rand() % 10;
             int direction = (rand() % 4) + 1;
 
-
+            //Check placement then place
             if (canPlaceShip(array, x, y, direction, i) == 1) {
                 placeShip(array, x, y, direction, i);
                 placed = 1;
@@ -162,8 +179,14 @@ void generateRandomShips(char array[10][10]) {
 }
 
 void placeShip(char array[10][10], int x, int y, int direction, int ship) {
+
+    //Get ship length and character
     int length = getSizeFromShip(ship);
     char shipChar = getCharFromShip(ship);
+
+
+    // Change how the array is traversed based on direction and place the ship's characters
+
     if (direction == UP) {
         for (int i = 0; i < length; ++i) {
             array[x - i][y] = shipChar;
@@ -259,148 +282,157 @@ void emptyArray(char array[10][10]) {
     }
 }
 
-int playerTurn(char player[10][10],char computer[10][10],FILE *log,int *playerHits,int *playerMisses){
-    displayPlayerBoard(player);
-    displayComputerBoard(computer);
-    int x,y;
+int playerTurn(char player[10][10], char computer[10][10], FILE* log, int* playerHits, int* playerMisses) {
+    int x, y;
     int keepGoing = 1;
-    while (keepGoing == 1){
+    while (keepGoing == 1) {
+        system("cls");
+        displayPlayerBoard(player);
+        displayComputerBoard(computer);
         printf("Enter a target:\n");
-        scanf("%d%d",&x,&y);
+        scanf("%d%d", &x, &y);
 
         if (x < 0 || x > 9)continue;
         if (y < 0 || y > 9)continue;
 
         char charAt = computer[x][y];
 
-        if(charAt == MISS){
+        if (charAt == MISS) {
             printf("You have already shot there chose a different location\n");
             continue;
         }
 
         int hit = isTileAShip(charAt);
 
-        if(hit == 1){
+        if (hit == 1) {
             //Increase stats
             *playerHits += 1;
 
             char ship = computer[x][y];
             computer[x][y] = HIT;
-            if(doesBoardContainChar(computer,ship) == 1){
-                printf("%d,%d is a hit!\n",x,y);
-                fprintf(log,"Player1: %d,%d \"hit\"");
-            }
 
+            if (doesBoardContainChar(computer, ship) == 1) {
+                printf("%d,%d is a hit!\n", x, y);
+                fprintf(log, "Player1: %d,%d \"hit\"\n", x, y);
+            }
             else {
-                printf("%d,%d is a hit! sunk %s!\n",x,y,getNameFromShip(ship));
-                fprintf(log,"Player1: %d,%d \"hit\" sunk %s!");
+                printf("%d,%d is a hit! sunk %s!\n", x, y, getNameFromShip(ship));
+                fprintf(log, "Player1: %d,%d \"hit\" sunk %s!\n", x, y, getNameFromShip(ship));
             }
 
             //Check if they have sunk every ship
-            if(isPlayerAlive(computer) == -1){
+            if (isPlayerAlive(computer) == -1) {
                 printf("Player 1 wins!\n");
                 printf("Outputting stats to the log file\n");
                 return -1;
             }
-        } else {
+        }
+        else {
             //Increase stats
             *playerMisses += 1;
 
-            printf("%d,%d is a miss!\n",x,y);
+            printf("%d,%d is a miss!\n", x, y);
             computer[x][y] = MISS;
-            fprintf(log,"Player1: %d,%d \"miss\"",x,y);
+            fprintf(log, "Player1: %d,%d \"miss\"\n", x, y);
             keepGoing = -1;
         }
+        system("pause");
+        system("cls");
     }
-    system("pause");
+
     return 1;
 }
 
-int isTileAShip(char found){
-    if(found == 'c')return 1;
-    if(found == 'd')return 1;
-    if(found == 'r')return 1;
-    if(found == 's')return 1;
-    if(found == 'b')return 1;
+int isTileAShip(char found) {
+    if (found == 'c')return 1;
+    if (found == 'd')return 1;
+    if (found == 'r')return 1;
+    if (found == 's')return 1;
+    if (found == 'b')return 1;
     return -1;
 }
 
-int computerTurn(char player[10][10],char computer[10][10],FILE *log,int *computerHits,int *computerMisses){
-    displayPlayerBoard(player);
-    displayComputerBoard(computer);
-    int x,y,keepGoing = 1;
+int computerTurn(char player[10][10], char computer[10][10], FILE* log, int* computerHits, int* computerMisses) {
+    int x, y, keepGoing = 1;
 
-    while(keepGoing == 1){
+    while (keepGoing == 1) {
+        displayPlayerBoard(player);
+        displayComputerBoard(computer);
         x = rand() % 10;
         y = rand() % 10;
 
         if (player[x][y] == MISS)continue;
 
-        printf("Player 2 selects %d,%d\n",x,y);
+        printf("Player 2 selects %d,%d\n", x, y);
         char charAtShot = player[x][y];
 
         int hit = isTileAShip(charAtShot);
 
-        if(hit == 1){
+        if (hit == 1) {
             //Increase stats
             *computerHits += 1;
             char ship = player[x][y];
             player[x][y] = HIT;
-            if(doesBoardContainChar(player,ship) == 1){
-                fprintf(log,"Player2: %d,%d \"hit\"");
-                printf("%d,%d is a hit!\n",x,y);
+            if (doesBoardContainChar(player, ship) == 1) {
+                fprintf(log, "Player2: %d,%d \"hit\"\n", x, y);
+                printf("%d,%d is a hit!\n", x, y);
             }
-            else{
-                fprintf(log,"Player2: %d,%d \"hit\" sunk %s!",x,y,getNameFromShip(ship));
-                printf("is a hit! %d,%d \"hit\" sunk %s!",x,y,getNameFromShip(ship));
+            else {
+                fprintf(log, "Player2: %d,%d \"hit\" sunk %s!\n", x, y, getNameFromShip(ship));
+                printf("is a hit! %d,%d \"hit\" sunk %s!\n", x, y, getNameFromShip(ship));
             }
 
             //Check if they have sunk every ship
-            if(isPlayerAlive(player) == -1){
+            if (isPlayerAlive(player) == -1) {
                 printf("Player 2 wins!\n");
                 printf("Outputting stats to the log file\n");
                 return -1;
             }
-        } else {
+        }
+        else {
             //Increase stats
             *computerMisses += 1;
 
-            printf("%d,%d is a miss!\n",x,y);
+            printf("%d,%d is a miss!\n", x, y);
             player[x][y] = MISS;
-            fprintf(log,"Player1: %d,%d \"miss\"",x,y);
+            fprintf(log, "Player2: %d,%d \"miss\"\n", x, y);
             keepGoing = -1;
         }
         system("pause");
+        system("cls");
     }
 
     return 1;
 }
 
-void logGame(int playerHits,int playerMisses,int computerHits,int computerMisses,int whoWon,FILE *log){
+void logGame(int playerHits, int playerMisses, int computerHits, int computerMisses, int whoWon, FILE* log) {
     //Log Winners
-    if(whoWon == 1)fprintf(log,"Player 1 wins Player 2 loses\n");
-    else fprintf(log,"Player 2 wings Player 1 loses\n");
+    if (whoWon == 1)fprintf(log, "Player 1 wins Player 2 loses\n");
+    else fprintf(log, "Player 2 wings Player 1 loses\n");
 
     //Log player stats
-    fprintf(log,"*** Player1 Stats ***\n");
-    fprintf(log,"Number of Hits: %d\n",playerHits);
-    fprintf(log,"Number of Misses: %d\n",playerMisses);
-    fprintf(log,"Total Shots: %d\n",playerHits + playerMisses);
-    fprintf(log,"Hit/Miss Ratio %d%%\n", (int)((double)playerHits/playerMisses * 100));
-    fprintf(log,"\n");
+    fprintf(log, "*** Player1 Stats ***\n");
+    fprintf(log, "Number of Hits: %d\n", playerHits);
+    fprintf(log, "Number of Misses: %d\n", playerMisses);
+    fprintf(log, "Total Shots: %d\n", playerHits + playerMisses);
+    fprintf(log, "Hit/Miss Ratio %d%%\n", (int)((double)playerHits / (playerMisses > 0 ? playerMisses : 1) * 100));
+    fprintf(log, "\n");
     //Log computer stats
-    fprintf(log,"*** Player2 Stats ***\n");
-    fprintf(log,"Number of Hits: %d\n",computerHits);
-    fprintf(log,"Number of Misses: %d\n",computerMisses);
-    fprintf(log,"Total Shots: %d\n",computerHits + computerMisses);
-    fprintf(log,"Hit/Miss Ratio %d%%\n", (int)((double)computerHits/computerMisses * 100));
+    fprintf(log, "*** Player2 Stats ***\n");
+    fprintf(log, "Number of Hits: %d\n", computerHits);
+    fprintf(log, "Number of Misses: %d\n", computerMisses);
+    fprintf(log, "Total Shots: %d\n", computerHits + computerMisses);
+    fprintf(log, "Hit/Miss Ratio %d%%\n",
+            (int)((double)computerHits / (computerMisses > 0 ? computerMisses : 1) * 100));
+
+    fclose(log);
 }
 
 void printMenu() {
     printf("***** Welcome to Battleship! *****\n");
     printf("1. This is a two player game.\n");
-    printf("2. Player1 is you and Player2 is the computer.");
-    printf("3. Etc. (You need to list the rest of the rules here.)\n");
+    printf("2. Player1 is you and Player2 is the computer.\n");
+    printf("3. Rules https://www.hasbro.com/common/instruct/battleship.pdf\n");
 }
 
 
@@ -417,7 +449,7 @@ void displayPlayerBoard(char array[10][10]) {
 }
 
 void displayComputerBoard(char array[10][10]) {
-    printf("Player 2's Boarder\n");
+    printf("Player 2's Board\n");
     printf("  0123456789\n");
     for (int i = 0; i < 10; ++i) {
         printf("%d ", i);
@@ -439,10 +471,10 @@ int doesBoardContainChar(char array[10][10], char c) {
     return -1;
 }
 
-int isPlayerAlive(char board[10][10]){
-
+int isPlayerAlive(char board[10][10]) {
+    //Check if all five ships still are floating
     for (int i = 1; i < 5; ++i) {
-        if(doesBoardContainChar(board,getCharFromShip(i)) == 1)return 1;
+        if (doesBoardContainChar(board, getCharFromShip(i)) == 1)return 1;
     }
     return -1;
 }
